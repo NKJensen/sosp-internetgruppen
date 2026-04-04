@@ -128,6 +128,8 @@ class SOSP_Maps_Frontend {
              . '<a href="' . esc_url( $table_url ) . '">Vis som tabel</a>'
              . ' &nbsp;|&nbsp; '
              . '<a href="' . esc_url( $admin_url ) . '">Ret kortet her</a>'
+             . ' &nbsp;|&nbsp; '
+             . '<a href="https://github.com/NKJensen/sosp-internetgruppen/blob/main/README.md" target="_blank">FAQ</a>'
              . '</p>';
     }
 

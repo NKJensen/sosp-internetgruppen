@@ -1,0 +1,71 @@
+# Ignore local configuration and environment files
+wp-config.php
+.env
+
+# Ignore node modules and vendor folders (if you add them)
+node_modules/
+vendor/
+
+# -----------------------------
+# WordPress core (keep your custom code in wp-content)
+# -----------------------------
+# Core directories
+/wp-admin/
+/wp-includes/
+
+# Core root files
+/wp-*.php
+/license.txt
+/readme.html
+/xmlrpc.php
+/cgi-bin/
+
+# -----------------------------
+# WordPress generated/runtime content (ignore uploads/cache/upgrade)
+# Keep plugin/theme code under wp-content/ tracked
+# -----------------------------
+/wp-content/uploads/
+/wp-content/upgrade/
+/wp-content/cache/
+
+# Language packs (generated) — WordPress can download/regenerate these
+/wp-content/languages/
+# Ignore compiled binary translations but keep source .po files if you maintain them
+/wp-content/languages/**/*.mo
+!wp-content/languages/**/*.po
+
+# -----------------------------
+# Common runtime & caching files (ignore these too)
+# -----------------------------
+.maintenance
+wp-content/advanced-cache.php
+wp-content/object-cache.php
+wp-content/db.php
+wp-content/sunrise.php
+
+# Ignore plugin/theme dependencies and build artifacts
+# (allow your custom plugin/theme code, but ignore deps produced by builds)
+wp-content/plugins/*/vendor/
+wp-content/plugins/*/node_modules/
+wp-content/themes/*/vendor/
+wp-content/themes/*/node_modules/
+wp-content/plugins/backup/
+wp-content/plugins/akismet/
+wp-content/plugins/hello.php
+wp-content/themes/astra/
+wp-content/themes/twentytwentythree/
+wp-content/themes/twentytwentyfour/
+wp-content/themes/twentytwentyfive/
+
+# Ignore database dumps/backups
+*.sql
+*.sql.gz
+
+# -----------------------------
+# Editor / OS files
+# -----------------------------
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.wp-config.php.swp

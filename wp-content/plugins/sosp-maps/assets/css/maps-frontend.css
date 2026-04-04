@@ -1,0 +1,103 @@
+#sosp-map-canvas {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sosp-info-window {
+    font-family: Arial, sans-serif;
+    min-width: 250px;
+    padding: 10px;
+    background: #fff;
+}
+
+.sosp-info-window h3 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.sosp-info-window h3 a {
+    color: #0073aa;
+    text-decoration: none;
+}
+
+.sosp-info-window h3 a:hover {
+    text-decoration: underline;
+}
+
+.sosp-info-window hr {
+    border: none;
+    border-top: 1px solid #eee;
+    margin: 10px 0;
+}
+
+.sosp-info-window p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.sosp-kontakt {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.sosp-kontakt a {
+    display: inline-block;
+    padding: 8px 16px;
+    background: #0073aa;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 3px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.sosp-kontakt a:hover {
+    background: #005a87;
+}
+
+/* Admin table styles */
+#sosp-maps table.wp-list-table {
+    margin-top: 20px;
+}
+
+#sosp-maps .button-small {
+    margin-right: 5px;
+}
+
+#sosp-maps .form-table {
+    background: #fff;
+    border: 1px solid #ccc;
+}
+
+#sosp-maps .regular-text {
+    width: 100%;
+    max-width: 400px;
+}
+/* URL Scraper Status Messages */
+#sosp_fetch_status {
+    font-weight: 500;
+    padding: 12px !important;
+    border-radius: 4px !important;
+    border-left: 4px solid #666;
+}
+
+#sosp_fetch_status.sosp-loading {
+    background-color: #d9edf7;
+    border-left-color: #469fc9;
+    color: #31708f;
+}
+
+#sosp_fetch_status.sosp-success {
+    background-color: #dff0d8;
+    border-left-color: #5cb85c;
+    color: #3c763d;
+}
+
+#sosp_fetch_status.sosp-error {
+    background-color: #f2dede;
+    border-left-color: #d9534f;
+    color: #a94442;
+}

@@ -275,6 +275,10 @@ class SOSP_Maps_Frontend {
                 </div>
 
             <?php endif; ?>
+
+            <p style="margin-top:20px;padding-top:10px;border-top:1px solid #eee;text-align:center;">
+                <a href="mailto:nkj@internetgruppen.dk?subject=<?php echo rawurlencode( 'Slet gruppe fra søspejderkortet' ); ?>">Slet gruppe - kontakt admin her</a>
+            </p>
         </div>
 
         <script>

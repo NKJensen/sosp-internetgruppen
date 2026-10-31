@@ -10,7 +10,7 @@ Denne vejledning er til dig, der vil tilføje eller opdatere en søspejdergruppe
 
 ### 1. Gå til redigeringssiden
 
-Åbn siden [sosp.internetgruppen.dk/ret-kortet/](https://sosp.internetgruppen.dk/ret-kortet/) i din browser.
+Åbn siden [sosp.internetgruppen.dk/index.php/ret-kortet/](https://sosp.internetgruppen.dk/index.php/ret-kortet/) i din browser.
 
 ### 2. Log ind med din e-mail
 

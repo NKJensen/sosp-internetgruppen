@@ -41,22 +41,171 @@ class SOSP_Maps_Frontend {
         return isset( $_COOKIE['sosp_auth'] ) ? sanitize_text_field( $_COOKIE['sosp_auth'] ) : null;
     }
 
-    private function get_auth_session() {
-        $token = $this->get_session_token();
-        if ( ! $token ) {
-            return null;
-        }
-        return get_transient( 'sosp_session_' . $token );
-    }
-
     private function is_authorized_user() {
-        $session = $this->get_auth_session();
-        return $session && ! empty( $session['email'] );
+        return (bool) self::current_email();
     }
 
     private function get_authorized_email() {
-        $session = $this->get_auth_session();
+        return self::current_email();
+    }
+
+    /**
+     * Verified e-mail of the visitor's OTP session, or null.
+     * Shared by "Ret kortet" and Frivilligbørsen (same cookie, same login).
+     */
+    public static function current_email() {
+        $token = isset( $_COOKIE['sosp_auth'] ) ? sanitize_text_field( $_COOKIE['sosp_auth'] ) : '';
+        if ( ! $token ) {
+            return null;
+        }
+        $session = get_transient( 'sosp_session_' . $token );
         return ( $session && ! empty( $session['email'] ) ) ? $session['email'] : null;
+    }
+
+    /**
+     * "Logget ind som ..." bar with a logout button.
+     */
+    public static function render_session_bar( $email ) {
+        ob_start();
+        ?>
+        <div style="padding:10px;background:#d4edda;border:1px solid #28a745;border-radius:4px;margin-bottom:15px;">
+            Logget ind som <strong><?php echo esc_html( $email ); ?></strong>.
+            <button type="button" id="sosp-logout-btn" style="margin-left:10px;">Log ud</button>
+        </div>
+        <script>
+        (function() {
+            document.getElementById('sosp-logout-btn').addEventListener('click', function() {
+                var data = new FormData();
+                data.append('action', 'sosp_maps_otp_logout');
+                fetch('<?php echo esc_js( admin_url( 'admin-ajax.php' ) ); ?>', { method: 'POST', body: data })
+                    .then(function() { location.reload(); });
+            });
+        })();
+        </script>
+        <?php
+        return ob_get_clean();
+    }
+
+    /**
+     * E-mail + one-time code login box. Reloads the page when logged in.
+     * Only one login box per page (fixed element IDs).
+     */
+    public static function render_login_box( $intro = 'Indtast din e-mailadresse for at modtage en engangskode.' ) {
+        ob_start();
+        ?>
+        <div id="sosp-otp-section">
+            <p><?php echo esc_html( $intro ); ?></p>
+
+            <div id="sosp-email-step">
+                <div style="display:flex;gap:10px;margin-bottom:10px;">
+                    <input type="email" id="sosp-auth-email" placeholder="din@email.dk" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                    <button type="button" id="sosp-send-code-btn" class="button button-primary">Send kode</button>
+                </div>
+                <div id="sosp-email-status"></div>
+            </div>
+
+            <div id="sosp-code-step" style="display:none;margin-top:15px;">
+                <p>Indtast den 6-cifrede kode, der er sendt til <strong id="sosp-sent-to"></strong>:</p>
+                <div style="display:flex;gap:10px;margin-bottom:10px;">
+                    <input type="text" id="sosp-auth-code" placeholder="123456" maxlength="6" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:4px;letter-spacing:4px;font-size:1.2em;">
+                    <button type="button" id="sosp-verify-code-btn" class="button button-primary">Bekræft kode</button>
+                </div>
+                <div id="sosp-code-status"></div>
+                <a href="#" id="sosp-resend-link" style="font-size:0.9em;">Send koden igen</a>
+            </div>
+        </div>
+
+        <script>
+        (function() {
+            var ajaxUrl = '<?php echo esc_js( admin_url( 'admin-ajax.php' ) ); ?>';
+            var verificationId = null;
+
+            function showStatus(el, msg, ok) {
+                el.style.display = 'block';
+                el.style.padding = '10px';
+                el.style.borderRadius = '4px';
+                el.style.marginTop = '8px';
+                el.style.background = ok ? '#d4edda' : '#f8d7da';
+                el.style.border = '1px solid ' + (ok ? '#28a745' : '#dc3545');
+                el.textContent = msg;
+            }
+
+            var sendBtn    = document.getElementById('sosp-send-code-btn');
+            var verifyBtn  = document.getElementById('sosp-verify-code-btn');
+            var resendLink = document.getElementById('sosp-resend-link');
+
+            function sendCode() {
+                var email = document.getElementById('sosp-auth-email').value;
+                var statusEl = document.getElementById('sosp-email-status');
+                sendBtn.disabled = true;
+                sendBtn.textContent = 'Sender...';
+
+                var data = new FormData();
+                data.append('action', 'sosp_maps_send_code');
+                data.append('email', email);
+
+                fetch(ajaxUrl, { method: 'POST', body: data })
+                    .then(function(r) { return r.json(); })
+                    .then(function(res) {
+                        sendBtn.disabled = false;
+                        sendBtn.textContent = 'Send kode';
+                        if (res.success) {
+                            verificationId = res.data.verification_id;
+                            document.getElementById('sosp-sent-to').textContent = email;
+                            document.getElementById('sosp-email-step').style.display = 'none';
+                            document.getElementById('sosp-code-step').style.display = 'block';
+                            document.getElementById('sosp-auth-code').focus();
+                        } else {
+                            showStatus(statusEl, res.data.message, false);
+                        }
+                    });
+            }
+
+            sendBtn.addEventListener('click', sendCode);
+
+            document.getElementById('sosp-auth-email').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') { e.preventDefault(); sendCode(); }
+            });
+
+            resendLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('sosp-email-step').style.display = 'block';
+                document.getElementById('sosp-code-step').style.display = 'none';
+                document.getElementById('sosp-email-status').style.display = 'none';
+            });
+
+            verifyBtn.addEventListener('click', function() {
+                var code = document.getElementById('sosp-auth-code').value;
+                var statusEl = document.getElementById('sosp-code-status');
+                verifyBtn.disabled = true;
+                verifyBtn.textContent = 'Bekræfter...';
+
+                var data = new FormData();
+                data.append('action', 'sosp_maps_verify_code');
+                data.append('verification_id', verificationId);
+                data.append('code', code);
+
+                fetch(ajaxUrl, { method: 'POST', body: data })
+                    .then(function(r) { return r.json(); })
+                    .then(function(res) {
+                        verifyBtn.disabled = false;
+                        verifyBtn.textContent = 'Bekræft kode';
+                        if (res.success) {
+                            showStatus(statusEl, 'Godkendt! Siden indlæses...', true);
+                            setTimeout(function() { location.reload(); }, 800);
+                        } else {
+                            showStatus(statusEl, res.data.message, false);
+                        }
+                    });
+            });
+
+            document.getElementById('sosp-auth-code').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') { e.preventDefault(); verifyBtn.click(); }
+            });
+        })();
+        </script>
+        <?php
+        return ob_get_clean();
     }
 
     // -------------------------------------------------------------------------
@@ -279,10 +428,7 @@ class SOSP_Maps_Frontend {
 
             <?php if ( $can_submit ) : ?>
 
-                <div style="padding:10px;background:#d4edda;border:1px solid #28a745;border-radius:4px;margin-bottom:15px;">
-                    Logget ind som <strong><?php echo esc_html( $email ); ?></strong>.
-                    <button id="sosp-logout-btn" style="margin-left:10px;">Log ud</button>
-                </div>
+                <?php echo self::render_session_bar( $email ); ?>
 
                 <?php if ( ! empty( $_GET['sosp_error'] ) ) : ?>
                 <div style="padding:10px;background:#f8d7da;border:1px solid #dc3545;border-radius:4px;margin-bottom:15px;">
@@ -341,130 +487,11 @@ class SOSP_Maps_Frontend {
 
             <?php else : ?>
 
-                <div id="sosp-otp-section">
-                    <p>Indtast din e-mailadresse for at modtage en engangskode.</p>
-
-                    <div id="sosp-email-step">
-                        <div style="display:flex;gap:10px;margin-bottom:10px;">
-                            <input type="email" id="sosp-auth-email" placeholder="din@email.dk" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:4px;">
-                            <button id="sosp-send-code-btn" class="button button-primary">Send kode</button>
-                        </div>
-                        <div id="sosp-email-status"></div>
-                    </div>
-
-                    <div id="sosp-code-step" style="display:none;margin-top:15px;">
-                        <p>Indtast den 6-cifrede kode, der er sendt til <strong id="sosp-sent-to"></strong>:</p>
-                        <div style="display:flex;gap:10px;margin-bottom:10px;">
-                            <input type="text" id="sosp-auth-code" placeholder="123456" maxlength="6" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:4px;letter-spacing:4px;font-size:1.2em;">
-                            <button id="sosp-verify-code-btn" class="button button-primary">Bekræft kode</button>
-                        </div>
-                        <div id="sosp-code-status"></div>
-                        <a href="#" id="sosp-resend-link" style="font-size:0.9em;">Send koden igen</a>
-                    </div>
-                </div>
+                <?php echo self::render_login_box(); ?>
 
             <?php endif; ?>
         </div>
 
-        <script>
-        (function() {
-            var ajaxUrl = '<?php echo esc_js( $ajax_url ); ?>';
-            var verificationId = null;
-
-            function showStatus(el, msg, ok) {
-                el.style.display = 'block';
-                el.style.padding = '10px';
-                el.style.borderRadius = '4px';
-                el.style.marginTop = '8px';
-                el.style.background = ok ? '#d4edda' : '#f8d7da';
-                el.style.border = '1px solid ' + (ok ? '#28a745' : '#dc3545');
-                el.textContent = msg;
-            }
-
-            <?php if ( ! $can_submit ) : ?>
-            var sendBtn    = document.getElementById('sosp-send-code-btn');
-            var verifyBtn  = document.getElementById('sosp-verify-code-btn');
-            var resendLink = document.getElementById('sosp-resend-link');
-
-            function sendCode() {
-                var email = document.getElementById('sosp-auth-email').value;
-                var statusEl = document.getElementById('sosp-email-status');
-                sendBtn.disabled = true;
-                sendBtn.textContent = 'Sender...';
-
-                var data = new FormData();
-                data.append('action', 'sosp_maps_send_code');
-                data.append('email', email);
-
-                fetch(ajaxUrl, { method: 'POST', body: data })
-                    .then(function(r) { return r.json(); })
-                    .then(function(res) {
-                        sendBtn.disabled = false;
-                        sendBtn.textContent = 'Send kode';
-                        if (res.success) {
-                            verificationId = res.data.verification_id;
-                            document.getElementById('sosp-sent-to').textContent = email;
-                            document.getElementById('sosp-email-step').style.display = 'none';
-                            document.getElementById('sosp-code-step').style.display = 'block';
-                            document.getElementById('sosp-auth-code').focus();
-                        } else {
-                            showStatus(statusEl, res.data.message, false);
-                        }
-                    });
-            }
-
-            sendBtn.addEventListener('click', sendCode);
-
-            resendLink.addEventListener('click', function(e) {
-                e.preventDefault();
-                document.getElementById('sosp-email-step').style.display = 'block';
-                document.getElementById('sosp-code-step').style.display = 'none';
-                document.getElementById('sosp-email-status').style.display = 'none';
-            });
-
-            verifyBtn.addEventListener('click', function() {
-                var code = document.getElementById('sosp-auth-code').value;
-                var statusEl = document.getElementById('sosp-code-status');
-                verifyBtn.disabled = true;
-                verifyBtn.textContent = 'Bekræfter...';
-
-                var data = new FormData();
-                data.append('action', 'sosp_maps_verify_code');
-                data.append('verification_id', verificationId);
-                data.append('code', code);
-
-                fetch(ajaxUrl, { method: 'POST', body: data })
-                    .then(function(r) { return r.json(); })
-                    .then(function(res) {
-                        verifyBtn.disabled = false;
-                        verifyBtn.textContent = 'Bekræft kode';
-                        if (res.success) {
-                            showStatus(statusEl, 'Godkendt! Siden indlæses...', true);
-                            setTimeout(function() { location.reload(); }, 800);
-                        } else {
-                            showStatus(statusEl, res.data.message, false);
-                        }
-                    });
-            });
-
-            document.getElementById('sosp-auth-code').addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') verifyBtn.click();
-            });
-            <?php endif; ?>
-
-            <?php if ( $can_submit ) : ?>
-            var logoutBtn = document.getElementById('sosp-logout-btn');
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', function() {
-                    var data = new FormData();
-                    data.append('action', 'sosp_maps_otp_logout');
-                    fetch(ajaxUrl, { method: 'POST', body: data })
-                        .then(function() { location.reload(); });
-                });
-            }
-            <?php endif; ?>
-        })();
-        </script>
         <?php
 
         // Enqueue form helper for URL scraping (only needed when authorized)

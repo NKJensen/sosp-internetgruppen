@@ -3,7 +3,7 @@
  * Plugin Name: SOSP Maps - Gruppe Markører
  * Plugin URI: http://sosp.internetgruppen.dk
  * Description: Administrer søspejdergrupper på et interaktivt OpenStreetMap-kort
- * Version: 2.2
+ * Version: 2.3
  * Author: Søspejderne
  * Author URI: http://sosp.internetgruppen.dk
  * License: GPL2
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants
-define( 'SOSP_MAPS_VERSION', '2.2' );
+define( 'SOSP_MAPS_VERSION', '2.3' );
 define( 'SOSP_MAPS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SOSP_MAPS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 // Receives requests to delete groups (can be overridden in wp-config.php)
@@ -28,10 +28,12 @@ function sosp_maps_load_classes() {
     require_once SOSP_MAPS_PLUGIN_DIR . 'includes/class-sosp-maps-db.php';
     require_once SOSP_MAPS_PLUGIN_DIR . 'includes/class-sosp-maps-admin.php';
     require_once SOSP_MAPS_PLUGIN_DIR . 'includes/class-sosp-maps-frontend.php';
+    require_once SOSP_MAPS_PLUGIN_DIR . 'includes/class-sosp-frivillig.php';
     
     new SOSP_Maps_DB();
     new SOSP_Maps_Admin();
     new SOSP_Maps_Frontend();
+    new SOSP_Frivillig();
 }
 
 // Initialize the plugin after WordPress is loaded

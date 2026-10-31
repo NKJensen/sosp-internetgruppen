@@ -1,0 +1,259 @@
+/* Frivilligbørsen */
+.sosp-friv {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.sosp-friv label {
+    display: block;
+    font-weight: 600;
+}
+
+.sosp-friv input[type=text],
+.sosp-friv input[type=email],
+.sosp-friv select,
+.sosp-friv textarea {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 4px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font: inherit;
+    font-weight: normal;
+}
+
+.sosp-friv-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.sosp-friv-filter label {
+    min-width: 220px;
+}
+
+.sosp-friv-button,
+.sosp-friv button[type=submit] {
+    display: inline-block;
+    padding: 8px 16px;
+    border: 1px solid #002b58;
+    border-radius: 4px;
+    background: #002b58;
+    color: #fff;
+    font: inherit;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.sosp-friv-button:hover,
+.sosp-friv button[type=submit]:hover {
+    background: #0b4a8b;
+    color: #fff;
+}
+
+.sosp-friv-card {
+    margin-bottom: 16px;
+    padding: 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #fff;
+}
+
+.sosp-friv-card h3 {
+    margin: 4px 0;
+    font-size: 1.25em;
+}
+
+.sosp-friv-meta,
+.sosp-friv-small,
+.sosp-friv-empty {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.sosp-friv-who {
+    margin: 0 0 8px;
+    font-weight: 600;
+}
+
+.sosp-friv-desc {
+    margin: 8px 0;
+}
+
+.sosp-friv-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+    color: #666;
+    font-size: 0.9em;
+}
+
+.sosp-friv-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.sosp-friv-trash {
+    padding: 4px;
+    border: none;
+    background: none;
+    font-size: 1.2em;
+    cursor: pointer;
+}
+
+.sosp-friv-panel {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 4px;
+    background: #f5f8fb;
+}
+
+.sosp-friv-panel p {
+    margin: 0 0 10px;
+}
+
+.sosp-friv-hp {
+    position: absolute;
+    left: -9999px;
+}
+
+.sosp-friv-status {
+    margin-top: 8px;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.sosp-friv-status.is-ok,
+.sosp-friv-notice {
+    border: 1px solid #28a745;
+    background: #d4edda;
+}
+
+.sosp-friv-status.is-error,
+.sosp-friv-notice.sosp-friv-error {
+    border: 1px solid #dc3545;
+    background: #f8d7da;
+}
+
+.sosp-friv-notice {
+    max-width: 900px;
+    margin: 0 auto 16px;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.sosp-friv-box {
+    margin-top: 32px;
+    padding: 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #fafafa;
+}
+
+.sosp-friv-box h2 {
+    margin-top: 0;
+}
+
+.sosp-friv-form p {
+    margin: 0 0 12px;
+}
+
+.sosp-friv-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.sosp-friv-overview {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.sosp-friv-col {
+    padding: 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #fff;
+}
+
+.sosp-friv-col h2 {
+    margin-top: 0;
+    font-size: 1.3em;
+}
+
+.sosp-friv-col ul {
+    margin: 0 0 12px;
+    padding: 0;
+    list-style: none;
+}
+
+.sosp-friv-col li {
+    margin-bottom: 8px;
+}
+
+.sosp-friv-col li span {
+    display: block;
+    color: #666;
+    font-size: 0.85em;
+}
+
+.sosp-friv-own {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.sosp-friv-own th,
+.sosp-friv-own td {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+    vertical-align: top;
+}
+
+.sosp-friv-own-actions {
+    white-space: nowrap;
+}
+
+.sosp-friv-own-actions form {
+    display: inline;
+}
+
+.sosp-friv button.sosp-friv-link {
+    padding: 0 0 0 10px;
+    border: none;
+    background: none;
+    color: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.sosp-friv button.sosp-friv-link:hover {
+    background: none;
+    color: inherit;
+}
+
+@media (max-width: 700px) {
+    .sosp-friv-overview,
+    .sosp-friv-row {
+        grid-template-columns: 1fr;
+    }
+
+    .sosp-friv-own-actions {
+        white-space: normal;
+    }
+
+    .sosp-friv button.sosp-friv-link {
+        display: block;
+        padding: 4px 0;
+    }
+}

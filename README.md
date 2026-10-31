@@ -48,6 +48,17 @@ Klik **Gem gruppe**. Gruppen vises nu på kortet på forsiden.
 
 Klik **Log ud**, når du er færdig.
 
+### Frivilligbørsen
+
+Under **Frivilligbørsen** i menuen er der tre sider: **Vi søger**, **Jeg søger** og **Jeg tilbyder**.
+
+- Alle kan læse opslagene og filtrere på landsdel
+- For at oprette et opslag logger du ind med din e-mail og en engangskode — samme login som "Ret kortet"
+- Din e-mail vises ikke. Andre skriver til dig via **Kontakt**-knappen, og beskeden sendes videre til din mail
+- Opslag vises i 3 måneder som standard (du kan vælge op til 36). En uge før de udløber, får du en mail med et link til at forlænge
+- Under **Mine opslag** kan du rette, forlænge og slette dine egne opslag
+- Er et opslag forkert eller upassende, kan du klikke på papirkurven 🗑 — administrator godkender, før det fjernes
+
 ### Slet en gruppe
 
 Grupper kan ikke slettes direkte. I stedet:

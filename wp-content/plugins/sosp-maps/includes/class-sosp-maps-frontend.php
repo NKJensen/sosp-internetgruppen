@@ -25,6 +25,12 @@ class SOSP_Maps_Frontend {
         add_action( 'wp_ajax_sosp_maps_verify_code', array( $this, 'handle_verify_code' ) );
         add_action( 'wp_ajax_nopriv_sosp_maps_otp_logout', array( $this, 'handle_logout' ) );
         add_action( 'wp_ajax_sosp_maps_otp_logout', array( $this, 'handle_logout' ) );
+
+        // Delete requests: anyone can request, only the admin (via mailed link) can approve
+        add_action( 'wp_ajax_nopriv_sosp_maps_request_delete', array( $this, 'handle_request_delete' ) );
+        add_action( 'wp_ajax_sosp_maps_request_delete', array( $this, 'handle_request_delete' ) );
+        add_action( 'admin_post_nopriv_sosp_maps_delete_confirm', array( $this, 'handle_delete_confirm' ) );
+        add_action( 'admin_post_sosp_maps_delete_confirm', array( $this, 'handle_delete_confirm' ) );
     }
 
     // -------------------------------------------------------------------------
@@ -150,6 +156,7 @@ class SOSP_Maps_Frontend {
                     <th style="padding:8px;border:1px solid #ddd;">Adresse</th>
                     <th style="padding:8px;border:1px solid #ddd;">E-mail</th>
                     <th style="padding:8px;border:1px solid #ddd;">Hjemmeside</th>
+                    <th style="padding:8px;border:1px solid #ddd;width:1%;"><span class="screen-reader-text">Slet</span></th>
                 </tr>
             </thead>
             <tbody>
@@ -167,10 +174,92 @@ class SOSP_Maps_Frontend {
                             <a href="<?php echo esc_url( $group->gr_side ); ?>" target="_blank"><?php echo esc_html( $group->gr_side ); ?></a>
                         <?php endif; ?>
                     </td>
+                    <td style="padding:8px;border:1px solid #ddd;text-align:center;">
+                        <button type="button" class="sosp-delete-btn" data-id="<?php echo intval( $group->ID ); ?>"
+                                title="Anmod om sletning af <?php echo esc_attr( $group->gr_navn ); ?>"
+                                aria-label="Anmod om sletning af <?php echo esc_attr( $group->gr_navn ); ?>"
+                                style="background:none;border:none;cursor:pointer;font-size:1.2em;padding:0;">&#128465;</button>
+                    </td>
+                </tr>
+                <tr class="sosp-delete-row" id="sosp-delete-row-<?php echo intval( $group->ID ); ?>" style="display:none;">
+                    <td colspan="5" style="padding:12px;border:1px solid #ddd;background:#fff8e1;">
+                        <p style="margin:0 0 8px;"><strong>Anmod om sletning af <?php echo esc_html( $group->gr_navn ); ?></strong><br>
+                        Gruppen slettes først, når administrator har godkendt anmodningen.</p>
+                        <p style="margin:0 0 8px;">
+                            <label>Begrundelse (valgfri)<br>
+                            <textarea class="sosp-delete-reason" rows="2" maxlength="500" style="width:100%;"></textarea></label>
+                        </p>
+                        <p style="margin:0 0 8px;">
+                            <label>Din e-mail (valgfri, hvis vi skal kunne svare dig)<br>
+                            <input type="email" class="sosp-delete-email" maxlength="100" style="width:100%;"></label>
+                        </p>
+                        <button type="button" class="sosp-delete-send">Send anmodning</button>
+                        <button type="button" class="sosp-delete-cancel">Annullér</button>
+                        <div class="sosp-delete-status" style="display:none;margin-top:8px;padding:10px;border-radius:4px;"></div>
+                    </td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
+
+        <script>
+        (function() {
+            var ajaxUrl = '<?php echo esc_js( admin_url( 'admin-ajax.php' ) ); ?>';
+
+            function showStatus(el, msg, ok) {
+                el.style.display = 'block';
+                el.style.background = ok ? '#d4edda' : '#f8d7da';
+                el.style.border = '1px solid ' + (ok ? '#28a745' : '#dc3545');
+                el.textContent = msg;
+            }
+
+            document.querySelectorAll('.sosp-delete-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var row = document.getElementById('sosp-delete-row-' + btn.getAttribute('data-id'));
+                    row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+                });
+            });
+
+            document.querySelectorAll('.sosp-delete-row').forEach(function(row) {
+                var id      = row.id.replace('sosp-delete-row-', '');
+                var sendBtn = row.querySelector('.sosp-delete-send');
+                var status  = row.querySelector('.sosp-delete-status');
+
+                row.querySelector('.sosp-delete-cancel').addEventListener('click', function() {
+                    row.style.display = 'none';
+                });
+
+                sendBtn.addEventListener('click', function() {
+                    sendBtn.disabled = true;
+                    sendBtn.textContent = 'Sender...';
+
+                    var data = new FormData();
+                    data.append('action', 'sosp_maps_request_delete');
+                    data.append('group_id', id);
+                    data.append('reason', row.querySelector('.sosp-delete-reason').value);
+                    data.append('email', row.querySelector('.sosp-delete-email').value);
+
+                    fetch(ajaxUrl, { method: 'POST', body: data })
+                        .then(function(r) { return r.json(); })
+                        .then(function(res) {
+                            if (res.success) {
+                                showStatus(status, res.data.message, true);
+                                sendBtn.style.display = 'none';
+                            } else {
+                                showStatus(status, res.data.message, false);
+                                sendBtn.disabled = false;
+                                sendBtn.textContent = 'Send anmodning';
+                            }
+                        })
+                        .catch(function() {
+                            showStatus(status, 'Noget gik galt. Prøv igen senere.', false);
+                            sendBtn.disabled = false;
+                            sendBtn.textContent = 'Send anmodning';
+                        });
+                });
+            });
+        })();
+        </script>
         <?php
         return ob_get_clean();
     }
@@ -275,10 +364,6 @@ class SOSP_Maps_Frontend {
                 </div>
 
             <?php endif; ?>
-
-            <p style="margin-top:20px;padding-top:10px;border-top:1px solid #eee;text-align:center;">
-                <a href="mailto:nkj@internetgruppen.dk?subject=<?php echo rawurlencode( 'Slet gruppe fra søspejderkortet' ); ?>">Slet gruppe - kontakt admin her</a>
-            </p>
         </div>
 
         <script>
@@ -465,6 +550,128 @@ class SOSP_Maps_Frontend {
         }
         setcookie( 'sosp_auth', '', time() - 3600, '/', '', is_ssl(), true );
         wp_send_json_success();
+    }
+
+    // -------------------------------------------------------------------------
+    // AJAX: request deletion of a group (mails an approval link to the admin)
+    // -------------------------------------------------------------------------
+
+    public function handle_request_delete() {
+        $group_id = isset( $_POST['group_id'] ) ? intval( $_POST['group_id'] ) : 0;
+        $reason   = isset( $_POST['reason'] ) ? sanitize_textarea_field( wp_unslash( $_POST['reason'] ) ) : '';
+        $email    = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '';
+        $reason   = mb_substr( $reason, 0, 500 );
+
+        $group = SOSP_Maps_DB::get_group( $group_id );
+        if ( ! $group ) {
+            wp_send_json_error( array( 'message' => 'Gruppen findes ikke (måske er den allerede slettet).' ) );
+        }
+
+        if ( $email && ! is_email( $email ) ) {
+            wp_send_json_error( array( 'message' => 'E-mailadressen er ugyldig.' ) );
+        }
+
+        // Only one open request per group per day
+        if ( get_transient( 'sosp_delreq_group_' . $group_id ) ) {
+            wp_send_json_error( array( 'message' => 'Der er allerede sendt en anmodning om at slette denne gruppe. Administrator kigger på den.' ) );
+        }
+
+        // Max 5 requests per hour per visitor, so nobody can flood the admin's inbox
+        $ip_key = 'sosp_delreq_ip_' . md5( isset( $_SERVER['REMOTE_ADDR'] ) ? $_SERVER['REMOTE_ADDR'] : '' );
+        $count  = (int) get_transient( $ip_key );
+        if ( $count >= 5 ) {
+            wp_send_json_error( array( 'message' => 'Du har sendt for mange anmodninger. Prøv igen om en time.' ) );
+        }
+
+        $token = wp_generate_password( 40, false );
+        set_transient( 'sosp_delete_' . $token, array(
+            'group_id' => $group_id,
+            'reason'   => $reason,
+            'email'    => $email,
+        ), 7 * DAY_IN_SECONDS );
+
+        $link = add_query_arg( array(
+            'action' => 'sosp_maps_delete_confirm',
+            'token'  => $token,
+        ), admin_url( 'admin-post.php' ) );
+
+        $subject = 'Anmodning om sletning: ' . $group->gr_navn;
+        $message = "Nogen har anmodet om at slette en gruppe fra søspejderkortet.\n\n"
+                 . 'Gruppe:     ' . $group->gr_navn . "\n"
+                 . 'Adresse:    ' . $group->gr_add . "\n"
+                 . 'Hjemmeside: ' . $group->gr_side . "\n"
+                 . 'E-mail:     ' . $group->gr_mail . "\n\n"
+                 . 'Begrundelse: ' . ( $reason !== '' ? $reason : '(ingen)' ) . "\n"
+                 . 'Anmodet af:  ' . ( $email !== '' ? $email : '(ikke oplyst)' ) . "\n\n"
+                 . "Åbn linket herunder for at se gruppen og godkende sletningen.\n"
+                 . "Gruppen slettes først, når du trykker \"Bekræft sletning\" på siden.\n\n"
+                 . $link . "\n\n"
+                 . "Linket virker i 7 dage. Gør du ingenting, bliver gruppen ikke slettet.\n";
+
+        $headers = array();
+        if ( $email ) {
+            $headers[] = 'Reply-To: ' . $email;
+        }
+
+        if ( ! wp_mail( SOSP_MAPS_ADMIN_EMAIL, $subject, $message, $headers ) ) {
+            delete_transient( 'sosp_delete_' . $token );
+            wp_send_json_error( array( 'message' => 'Anmodningen kunne ikke sendes. Prøv igen senere.' ) );
+        }
+
+        set_transient( 'sosp_delreq_group_' . $group_id, 1, DAY_IN_SECONDS );
+        set_transient( $ip_key, $count + 1, HOUR_IN_SECONDS );
+
+        wp_send_json_success( array( 'message' => 'Tak! Anmodningen er sendt til administrator, som skal godkende sletningen.' ) );
+    }
+
+    // -------------------------------------------------------------------------
+    // Approval page for delete requests (link from the admin mail)
+    // GET shows a confirmation page; only the POST from its button deletes,
+    // so mail scanners that pre-open links cannot delete anything.
+    // -------------------------------------------------------------------------
+
+    public function handle_delete_confirm() {
+        $token   = isset( $_REQUEST['token'] ) ? preg_replace( '/[^A-Za-z0-9]/', '', $_REQUEST['token'] ) : '';
+        $request = $token ? get_transient( 'sosp_delete_' . $token ) : false;
+        $title   = 'Slet gruppe';
+
+        if ( ! $request ) {
+            wp_die( '<p>Linket er udløbet eller allerede brugt.</p>', $title, array( 'response' => 410 ) );
+        }
+
+        $group = SOSP_Maps_DB::get_group( $request['group_id'] );
+        if ( ! $group ) {
+            delete_transient( 'sosp_delete_' . $token );
+            wp_die( '<p>Gruppen findes ikke længere – den er måske allerede slettet.</p>', $title, array( 'response' => 200 ) );
+        }
+
+        if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
+            SOSP_Maps_DB::delete_group( $group->ID );
+            delete_transient( 'sosp_delete_' . $token );
+            delete_transient( 'sosp_delreq_group_' . $group->ID );
+            wp_die(
+                '<p>Gruppen <strong>' . esc_html( $group->gr_navn ) . '</strong> er slettet fra kortet.</p>'
+                . '<p><a href="' . esc_url( home_url( '/' ) ) . '">Gå til kortet</a></p>',
+                $title,
+                array( 'response' => 200 )
+            );
+        }
+
+        $html = '<h1>Slet gruppe?</h1>'
+              . '<p><strong>' . esc_html( $group->gr_navn ) . '</strong><br>'
+              . esc_html( $group->gr_add ) . '<br>'
+              . esc_html( $group->gr_side ) . '<br>'
+              . esc_html( $group->gr_mail ) . '</p>'
+              . '<p>Begrundelse: ' . esc_html( $request['reason'] !== '' ? $request['reason'] : '(ingen)' ) . '<br>'
+              . 'Anmodet af: ' . esc_html( $request['email'] !== '' ? $request['email'] : '(ikke oplyst)' ) . '</p>'
+              . '<form method="POST" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">'
+              . '<input type="hidden" name="action" value="sosp_maps_delete_confirm">'
+              . '<input type="hidden" name="token" value="' . esc_attr( $token ) . '">'
+              . '<button type="submit" class="button" style="background:#dc3545;color:#fff;border-color:#dc3545;">Bekræft sletning</button>'
+              . '</form>'
+              . '<p style="margin-top:15px;">Vil du ikke slette gruppen, så luk bare siden.</p>';
+
+        wp_die( $html, $title, array( 'response' => 200 ) );
     }
 
     // -------------------------------------------------------------------------

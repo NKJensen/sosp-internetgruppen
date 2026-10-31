@@ -48,6 +48,14 @@ Klik **Gem gruppe**. Gruppen vises nu på kortet på forsiden.
 
 Klik **Log ud**, når du er færdig.
 
+### Slet en gruppe
+
+Grupper kan ikke slettes direkte. I stedet:
+
+1. Gå til **Gruppeliste** og klik på papirkurven 🗑 ud for gruppen
+2. Skriv evt. en begrundelse og din e-mail, og klik **Send anmodning**
+3. Administrator får en mail med et link og sletter gruppen, hvis anmodningen godkendes
+
 ---
 
 ## Kort og adresseopslag

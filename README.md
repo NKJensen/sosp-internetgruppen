@@ -50,24 +50,14 @@ Klik **Log ud**, når du er færdig.
 
 ---
 
-## Konfiguration: wp-config.php
+## Kort og adresseopslag
 
-API-nøgler og andre hemmeligheder må **ikke** ligge i plugin-koden eller i git.
-De skal i stedet defineres i WordPress-installationens `wp-config.php`, som aldrig
-commites til git.
+Kortet bruger [OpenStreetMap](https://www.openstreetmap.org) og kræver **ingen API-nøgle**:
 
-Tilføj følgende linje i `wp-config.php` **før** linjen
-`/* That's all, stop editing! Happy publishing. */`:
+- **Kortvisning:** [Leaflet](https://leafletjs.com) med OpenStreetMaps standardkort (ingen nøgle).
+  Leaflet og Leaflet.markercluster ligger lokalt i `sosp-maps/assets/lib/`.
+- **Adresse → koordinater:** [Nominatim](https://nominatim.org) (OpenStreetMaps geokoder),
+  begrænset til Danmark. Bruges kun, når en gruppe gemmes uden koordinater.
 
-```php
-// Google Maps API-nøgle til sosp-maps plugin
-define( 'SOSP_MAPS_GOOGLE_API_KEY', 'din-google-maps-api-nøgle-her' );
-```
-
-### Sådan får du en Google Maps API-nøgle
-
-1. Gå til [Google Cloud Console](https://console.cloud.google.com/)
-2. Opret eller vælg et projekt
-3. Aktivér **Maps JavaScript API** og **Geocoding API**
-4. Gå til **APIs & Services → Credentials** og opret en API-nøgle
-5. Begræns nøglen til de to ovenstående API'er og til dit domæne
+Den tidligere linje `define( 'SOSP_MAPS_GOOGLE_API_KEY', ... )` i `wp-config.php`
+bruges ikke længere og kan slettes.

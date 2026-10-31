@@ -2,8 +2,8 @@
 /**
  * Plugin Name: SOSP Maps - Gruppe Markører
  * Plugin URI: http://sosp.internetgruppen.dk
- * Description: Administrer søspejdergrupper på et interaktivt Google Maps kort
- * Version: 2.0
+ * Description: Administrer søspejdergrupper på et interaktivt OpenStreetMap-kort
+ * Version: 2.1
  * Author: Søspejderne
  * Author URI: http://sosp.internetgruppen.dk
  * License: GPL2
@@ -15,11 +15,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants
-define( 'SOSP_MAPS_VERSION', '2.0' );
+define( 'SOSP_MAPS_VERSION', '2.1' );
 define( 'SOSP_MAPS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SOSP_MAPS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-// Google Maps API key skal defineres i wp-config.php:
-// define( 'SOSP_MAPS_GOOGLE_API_KEY', 'din-nøgle-her' );
 
 // Load the classes
 function sosp_maps_load_classes() {

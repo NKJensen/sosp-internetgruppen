@@ -33,34 +33,94 @@ class SOSP_Maps_DB {
     }
 
     /**
-     * Geocode an address using Google Geocoding API.
+     * Geocode an address using OpenStreetMap Nominatim (limited to Denmark).
      * Returns array with 'lat' and 'lng' on success, or false on failure.
+     *
+     * Nominatim handles Danish "Vej 1, 8000 Aarhus C" poorly (the district letter
+     * and city name often give no hits, and the postcode is only a soft hint).
+     * So we try a few query variants and only accept a hit whose postcode matches.
+     * As a last resort the group is placed at the centre of its postcode area.
+     *
+     * Nominatim usage policy: max 1 request/second and an identifying User-Agent.
+     * See https://operations.osmfoundation.org/policies/nominatim/
      */
     public static function geocode_address( $address ) {
-        if ( empty( $address ) ) {
+        $address = trim( (string) $address );
+        if ( $address === '' ) {
             return false;
         }
 
-        if ( ! defined( 'SOSP_MAPS_GOOGLE_API_KEY' ) || empty( SOSP_MAPS_GOOGLE_API_KEY ) ) {
+        // Split "Vejnavn 12, 8000 By" into street and postcode
+        $postcode = preg_match( '/\b(\d{4})\b/', $address, $m ) ? $m[1] : '';
+        $parts    = array_map( 'trim', explode( ',', $address ) );
+        $street   = $parts[0];
+        if ( count( $parts ) === 1 && $postcode ) {
+            $street = trim( strstr( $address, $postcode, true ) );
+        }
+
+        $queries = array();
+        if ( $street && $postcode ) {
+            $queries[] = array( 'q' => $street . ', ' . $postcode );
+        }
+        $queries[] = array( 'q' => $address );
+        if ( $street && $street !== $address ) {
+            $queries[] = array( 'q' => $street );
+        }
+        if ( $postcode ) {
+            $queries[] = array( 'postalcode' => $postcode, 'country' => 'dk' );
+        }
+        $queries = array_unique( $queries, SORT_REGULAR );
+
+        foreach ( array_values( $queries ) as $i => $query ) {
+            if ( $i > 0 ) {
+                sleep( 1 );
+            }
+            $hit = self::nominatim_search( $query, $postcode );
+            if ( $hit ) {
+                return $hit;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Run one Nominatim search. Returns the first hit (matching $postcode, if given)
+     * as array with 'lat' and 'lng', or false.
+     */
+    private static function nominatim_search( $query, $postcode ) {
+        $url = add_query_arg( array_map( 'rawurlencode', array_merge( $query, array(
+            'format'         => 'jsonv2',
+            'countrycodes'   => 'dk',
+            'addressdetails' => 1,
+            'limit'          => 5,
+        ) ) ), 'https://nominatim.openstreetmap.org/search' );
+
+        $response = wp_remote_get( $url, array(
+            'timeout' => 10,
+            'headers' => array(
+                'User-Agent'      => 'sosp-maps/' . SOSP_MAPS_VERSION . ' (' . home_url( '/' ) . ')',
+                'Accept-Language' => 'da',
+            ),
+        ) );
+        if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
             return false;
         }
 
-        $url = 'https://maps.googleapis.com/maps/api/geocode/json?address=' . rawurlencode( $address ) . '&key=' . SOSP_MAPS_GOOGLE_API_KEY;
-
-        $response = wp_remote_get( $url );
-        if ( is_wp_error( $response ) ) {
+        $data = json_decode( wp_remote_retrieve_body( $response ) );
+        if ( empty( $data ) || ! is_array( $data ) ) {
             return false;
         }
 
-        $body = wp_remote_retrieve_body( $response );
-        $data = json_decode( $body );
-        if ( ! $data || empty( $data->results ) ) {
-            return false;
-        }
-
-        $loc = $data->results[0]->geometry->location;
-        if ( isset( $loc->lat ) && isset( $loc->lng ) ) {
-            return array( 'lat' => floatval( $loc->lat ), 'lng' => floatval( $loc->lng ) );
+        foreach ( $data as $hit ) {
+            if ( ! isset( $hit->lat, $hit->lon ) ) {
+                continue;
+            }
+            $hit_postcode = isset( $hit->address->postcode ) ? $hit->address->postcode : '';
+            if ( $postcode && $hit_postcode !== $postcode ) {
+                continue;
+            }
+            return array( 'lat' => floatval( $hit->lat ), 'lng' => floatval( $hit->lon ) );
         }
 
         return false;

@@ -2,7 +2,7 @@
 
 ## Oversigt
 
-SOSP Maps er en WordPress plugin til administrering af søspejdergrupper på et interaktivt Google Maps kort.
+SOSP Maps er en WordPress plugin til administrering af søspejdergrupper på et interaktivt OpenStreetMap-kort.
 
 ## Installation via SSH
 
@@ -50,13 +50,10 @@ Databasetabellen oprettes automatisk ved aktivering.
 
 ## Konfiguration
 
-### Google Maps API Key
+### Kort og adresseopslag
 
-Pluginen bruger en default Google Maps API key. Hvis du vil ændre den:
-
-1. Åbn `/sosp-maps/includes/class-sosp-maps-frontend.php`
-2. Find linjen: `wp_enqueue_script( 'google-maps', 'https://maps.googleapis.com/maps/api/js?key=AIzaSyCOLP7abuEWwxQSFIp9dQg_TnFP1CiOJhk', ...`
-3. Erstat API key med din egen fra Google Cloud Console
+Kortet bruger OpenStreetMap via Leaflet, og adresser slås op via Nominatim.
+Der skal **ikke** bruges nogen API-nøgle. Leaflet-filerne ligger i `assets/lib/`.
 
 ### Marker billede
 
@@ -76,9 +73,11 @@ Marker billedet skal placeres i: `/wp-content/plugins/sosp-maps/assets/images/ma
 
 ### Find GPS koordinater
 
-1. Åbn https://maps.google.com
+Koordinater udfyldes automatisk ud fra adressen. Vil du finde dem selv:
+
+1. Åbn https://www.openstreetmap.org
 2. Søg efter gruppens adresse
-3. Højreklik på markeøren
+3. Højreklik på stedet og vælg "Vis adresse"
 4. Kopier de viste koordinater
 5. Indsæt i formularen (lat = bredde, lng = længde)
 
@@ -123,7 +122,7 @@ SELECT gr_navn, gr_side, gr_lat, gr_lng, gr_add, gr_mail FROM markers_soa;
 - Tjek at pluginen er aktiveret
 - Tjek at shortcoden `[sosp_maps]` er på siden
 - Kontroller browser console for JavaScript fejl (F12)
-- Tjek Google Maps API key er gyldig
+- Tjek at filerne i `assets/lib/` er uploadet
 
 ### Markørerne vises ikke
 
@@ -147,6 +146,11 @@ SELECT gr_navn, gr_side, gr_lat, gr_lng, gr_add, gr_mail FROM markers_soa;
 For spørgsmål eller problemer kontakt: [din kontakt information]
 
 ## Changelog
+
+### Version 2.1
+- Skiftet fra Google Maps til OpenStreetMap (Leaflet + OSM standardkort)
+- Nærtliggende markører samles i klynger
+- Adresseopslag via Nominatim i stedet for Google Geocoding — ingen API-nøgle
 
 ### Version 2.0
 - Konverteret fra standalone til WordPress plugin

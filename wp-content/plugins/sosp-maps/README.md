@@ -1,12 +1,12 @@
 # SOSP Maps Plugin
 
-Et WordPress plugin til at administrere og vise søspejdergrupper på et interaktivt Google Maps kort.
+Et WordPress plugin til at administrere og vise søspejdergrupper på et interaktivt OpenStreetMap-kort.
 
 ## Features
 
 ✅ Administrer grupper fra WordPress admin panel
 ✅ Tilføj/rediger/slet gruppemarkører
-✅ Interaktivt Google Maps kort på frontend
+✅ Interaktivt OpenStreetMap-kort (Leaflet) på frontend med samling af nærtliggende markører
 ✅ Responsive design
 ✅ GPS koordinater styring
 ✅ Gruppekontaktoplysninger (e-mail, hjemmeside, adresse)
@@ -48,27 +48,16 @@ Tilføj shortcoden på en side/post:
 [sosp_maps]
 ```
 
-## Konfiguration: wp-config.php
+## Kort og adresseopslag
 
-API-nøgler og andre hemmeligheder må **ikke** ligge i plugin-koden eller i git.
-De skal i stedet defineres i WordPress-installationens `wp-config.php`, som aldrig
-commites til git.
+Pluginen kræver **ingen API-nøgle**:
 
-Tilføj følgende linje i `wp-config.php` **før** linjen
-`/* That's all, stop editing! Happy publishing. */`:
-
-```php
-// Google Maps API-nøgle til sosp-maps plugin
-define( 'SOSP_MAPS_GOOGLE_API_KEY', 'din-google-maps-api-nøgle-her' );
-```
-
-### Sådan får du en Google Maps API-nøgle
-
-1. Gå til [Google Cloud Console](https://console.cloud.google.com/)
-2. Opret eller vælg et projekt
-3. Aktivér **Maps JavaScript API** og **Geocoding API**
-4. Gå til **APIs & Services → Credentials** og opret en API-nøgle
-5. Begræns nøglen til de to ovenstående API'er og til dit domæne
+- **Kortvisning:** [Leaflet](https://leafletjs.com) 1.9.4 med OpenStreetMaps standardkort
+  (data © OpenStreetMap-bidragydere). Leaflet og Leaflet.markercluster 1.5.3 ligger
+  lokalt i `assets/lib/`.
+- **Adresse → koordinater:** [Nominatim](https://nominatim.org), begrænset til Danmark.
+  Nominatim tillader højst 1 opslag pr. sekund, hvilket er rigeligt, da der kun slås
+  op, når en gruppe gemmes uden koordinater.
 
 ## Tilpasning
 

@@ -181,9 +181,9 @@ class SOSP_Maps_Admin {
             <div style="margin-top: 30px; padding: 15px; background: #f5f5f5; border-radius: 4px;">
                 <p><strong>Tip:</strong> Du kan finde koordinater ved at:</p>
                 <ol>
-                    <li>Gå til <a href="https://maps.google.com" target="_blank">Google Maps</a></li>
+                    <li>Gå til <a href="https://www.openstreetmap.org" target="_blank">OpenStreetMap</a></li>
                     <li>Søge efter adressen</li>
-                    <li>Højreklik på markeøren og kopier koordinaterne</li>
+                    <li>Højreklikke på stedet og vælge "Vis adresse" — koordinaterne vises i venstre side</li>
                 </ol>
             </div>
         </div>

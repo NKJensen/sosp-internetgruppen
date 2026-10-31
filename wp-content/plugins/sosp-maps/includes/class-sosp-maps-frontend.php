@@ -59,14 +59,18 @@ class SOSP_Maps_Frontend {
 
     public function enqueue_assets() {
         if ( ( function_exists( 'is_front_page' ) && is_front_page() ) || ( is_singular() && has_shortcode( get_post()->post_content, 'sosp_maps' ) ) ) {
-            $gmaps_key = defined( 'SOSP_MAPS_GOOGLE_API_KEY' ) ? SOSP_MAPS_GOOGLE_API_KEY : '';
-            $gmaps_url = 'https://maps.googleapis.com/maps/api/js' . ( $gmaps_key ? '?key=' . $gmaps_key : '' );
-            wp_enqueue_script( 'google-maps', $gmaps_url, array(), SOSP_MAPS_VERSION );
+            // Leaflet (OpenStreetMap) and marker clustering, bundled locally in assets/lib
+            $lib_url = SOSP_MAPS_PLUGIN_URL . 'assets/lib/';
+            wp_enqueue_style( 'leaflet', $lib_url . 'leaflet/leaflet.css', array(), '1.9.4' );
+            wp_enqueue_style( 'leaflet-markercluster', $lib_url . 'leaflet-markercluster/MarkerCluster.css', array( 'leaflet' ), '1.5.3' );
+            wp_enqueue_style( 'leaflet-markercluster-default', $lib_url . 'leaflet-markercluster/MarkerCluster.Default.css', array( 'leaflet-markercluster' ), '1.5.3' );
+            wp_enqueue_script( 'leaflet', $lib_url . 'leaflet/leaflet.js', array(), '1.9.4', true );
+            wp_enqueue_script( 'leaflet-markercluster', $lib_url . 'leaflet-markercluster/leaflet.markercluster.js', array( 'leaflet' ), '1.5.3', true );
 
             wp_enqueue_script(
                 'sosp-maps-frontend',
                 SOSP_MAPS_PLUGIN_URL . 'assets/js/maps-frontend.js',
-                array( 'google-maps' ),
+                array( 'leaflet', 'leaflet-markercluster' ),
                 SOSP_MAPS_VERSION,
                 true
             );
@@ -91,7 +95,7 @@ class SOSP_Maps_Frontend {
             wp_enqueue_style(
                 'sosp-maps-frontend',
                 SOSP_MAPS_PLUGIN_URL . 'assets/css/maps-frontend.css',
-                array(),
+                array( 'leaflet-markercluster-default' ),
                 SOSP_MAPS_VERSION
             );
         }

@@ -37,11 +37,14 @@ sosp-maps/
 │   └── class-sosp-maps-frontend.php (Frontend kort)
 └── assets/
     ├── js/
-    │   └── maps-frontend.js    (Google Maps JavaScript)
+    │   └── maps-frontend.js    (Kort-JavaScript, Leaflet/OpenStreetMap)
     ├── css/
     │   └── maps-frontend.css   (Styling)
-    └── images/
-        └── marker.png         (Marker ikon - skal uploades)
+    ├── images/
+    │   └── marker.png         (Marker ikon - skal uploades)
+    └── lib/
+        ├── leaflet/           (Leaflet 1.9.4)
+        └── leaflet-markercluster/ (Leaflet.markercluster 1.5.3)
 ```
 
 ## Næste skridt
@@ -54,7 +57,7 @@ sosp-maps/
 
 ## Vigtige detaljer
 
-- **Google Maps API key**: Allerede sat, men kan ændres hvis nødvendigt
+- **Kort**: OpenStreetMap via Leaflet — ingen API-nøgle nødvendig
 - **Koordinater format**: Decimal (f.eks. 55.408, 10.389)
 - **Sikkerhed**: Kun admin kan ændre data
 - **Responsive**: Virker på alle enheder

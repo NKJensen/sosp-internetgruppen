@@ -46,10 +46,12 @@ scp -r SOSP-Maps-Plugin brugernavn@sosp.internetgruppen.dk:/home/brugernavn/sosp
 
 ### Find koordinater nemt
 
-1. Åbn https://maps.google.dk
+Koordinaterne udfyldes automatisk ud fra adressen, hvis felterne er tomme. Vil du finde dem selv:
+
+1. Åbn https://www.openstreetmap.org
 2. Søg gruppens adresse
-3. Højreklik på rødt ikon
-4. Se tallene i pop-up (det er lat,lng)
+3. Højreklik på stedet og vælg "Vis adresse"
+4. Se tallene i venstre side (det er lat,lng)
 5. Kopier dem til formularen
 
 ### Vis kortet på siden
